@@ -16,14 +16,19 @@ export const appRouter = router({
 export type AppRouter = typeof appRouter;
 
 const apiKeyMiddleware = async (c: Context, next: () => Promise<void>) => {
-  const apiKey = c.req.header('x-api-key'); 
-  const validApiKey = process.env.API_KEY; 
+  // Exclude the `/docs` route from the middleware
+  if (c.req.path === '/docs') {
+    return next();
+  }
+
+  const apiKey = c.req.header('x-api-key');
+  const validApiKey = process.env.API_KEY;
 
   if (!apiKey || apiKey !== validApiKey) {
     return c.json({ error: 'Unauthorized: Invalid API key' }, 401);
   }
 
-  await next(); 
+  await next();
 };
 
 export function createAppRoutes() {
@@ -66,7 +71,7 @@ export function createAppRoutes() {
     })
   );
 
-  routes.get('/health', (c) => {
+  routes.get('/health', (c: Context) => {
     return c.json({
       status: 'OK',
       service: 's3-service',
@@ -74,7 +79,7 @@ export function createAppRoutes() {
     });
   });
 
-  routes.get('/', (c) => c.redirect('/doc'));
+  routes.get('/', (c: Context) => c.redirect('/docs'));
 
   return routes;
 }
