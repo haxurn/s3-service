@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"verbatimModuleSyntax": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"types": ["bun"],
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx",
+		"esModuleInterop": true
+	},
+	"tsc-alias": {
+		"resolveFullPaths": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
+}
