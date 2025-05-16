@@ -19,17 +19,21 @@ if (!fs.existsSync(openapiDir)) {
 }
 
 const app = new Hono();
-app.use(logger());
-app.use(prettyJSON());
+
+// Apply CORS middleware as the very first middleware
 app.use(
 	"/*",
 	cors({
-		origin: process.env.CORS_ORIGIN || "*", // Default to allow any origin if not specified
+		origin: process.env.CORS_ORIGIN || "*", // Set to "*" or your frontend URL, e.g., "http://localhost:3000"
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+		allowHeaders: ["Content-Type", "Authorization", "x-api-key"],
 		exposeHeaders: ["Content-Length", "Content-Type", "ETag"],
 		maxAge: 86400,
 	}),
 );
+
+app.use(logger());
+app.use(prettyJSON());
 
 // Error handling middleware
 app.onError((err, c) => {
