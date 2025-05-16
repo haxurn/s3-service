@@ -1,0 +1,800 @@
+{
+  "info": {
+    "name": "S3 Service API",
+    "description": "Comprehensive API collection for the S3 Service - includes file upload, retrieval, modification, and management operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Documentation",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/health",
+              "host": ["{{BASE_URL}}"],
+              "path": ["health"]
+            },
+            "description": "Simple health check endpoint to verify the service is running properly."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{BASE_URL}}/health",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"status\": \"ok\",\n    \"time\": \"2023-07-10T12:00:00.000Z\",\n    \"service\": \"s3-service\",\n    \"version\": \"1.0.0\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/docs",
+              "host": ["{{BASE_URL}}"],
+              "path": ["docs"]
+            },
+            "description": "API documentation page that provides details about all available endpoints."
+          },
+          "response": []
+        },
+        {
+          "name": "Redirect to Docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/",
+              "host": ["{{BASE_URL}}"],
+              "path": [""]
+            },
+            "description": "Root endpoint that redirects to the API documentation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Operations",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "File to upload to S3"
+                },
+                {
+                  "key": "action",
+                  "type": "text",
+                  "value": "upload",
+                  "description": "Action type (required)"
+                },
+                {
+                  "key": "folder",
+                  "type": "text",
+                  "value": "uploads",
+                  "description": "Optional folder path to store the file in (default: root)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/s3/upload",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "upload"]
+            },
+            "description": "Upload a file to S3 storage. The file will be stored with a unique identifier and can be retrieved later using the returned key."
+          },
+          "response": [
+            {
+              "name": "Successful Upload",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "example.txt"
+                    },
+                    {
+                      "key": "action",
+                      "type": "text",
+                      "value": "upload"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/upload",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "upload"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"key\": \"uploads/c4ca4238a0b923820dcc509a6f75849b.txt\",\n    \"size\": 1024,\n    \"contentType\": \"text/plain\",\n    \"url\": \"https://example-bucket.s3.amazonaws.com/uploads/c4ca4238a0b923820dcc509a6f75849b.txt\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get File Metadata (Path)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file/:key",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "uploads/example-file.txt",
+                  "description": "Key of the file to retrieve metadata for"
+                }
+              ]
+            },
+            "description": "Retrieve metadata information about a file stored in S3 without downloading the actual file content. This includes details like content type, size, and modification date."
+          },
+          "response": [
+            {
+              "name": "Successful Metadata Retrieval",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/:key",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", ":key"],
+                  "variable": [
+                    {
+                      "key": "key",
+                      "value": "uploads/example-file.txt"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"key\": \"uploads/example-file.txt\",\n    \"contentType\": \"text/plain\",\n    \"contentLength\": 1024,\n    \"lastModified\": \"2023-07-10T12:00:00.000Z\",\n    \"metadata\": {\n        \"uploaded-by\": \"test-user\"\n    },\n    \"eTag\": \"abc123def456\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get File Metadata (Query)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file?key={{FILE_KEY}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{FILE_KEY}}",
+                  "description": "URL-encoded key of the file to retrieve metadata for"
+                }
+              ]
+            },
+            "description": "Retrieve metadata about a file using query parameter approach instead of path parameter. This is useful for cases where the key contains special characters that might cause issues in URL paths."
+          },
+          "response": [
+            {
+              "name": "Successful Metadata Retrieval",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file?key=log%2Fexample-file.txt",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file"],
+                  "query": [
+                    {
+                      "key": "key",
+                      "value": "log%2Fexample-file.txt"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"key\": \"log/example-file.txt\",\n    \"contentType\": \"text/plain\",\n    \"contentLength\": 1024,\n    \"lastModified\": \"2023-07-10T12:00:00.000Z\",\n    \"metadata\": {\n        \"uploaded-by\": \"test-user\"\n    },\n    \"eTag\": \"abc123def456\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Render File",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file/render?key={{FILE_KEY}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file", "render"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{FILE_KEY}}",
+                  "description": "URL-encoded key of the file to render"
+                }
+              ]
+            },
+            "description": "Render the content of a file directly in the browser. This endpoint streams the file content with the appropriate content type for inline display or download. Use for displaying logs, images, or other file types directly in your application."
+          },
+          "response": [
+            {
+              "name": "Successful Text File Render",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/render?key=log%2Fexample.txt",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", "render"],
+                  "query": [
+                    {
+                      "key": "key",
+                      "value": "log%2Fexample.txt"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                },
+                {
+                  "key": "Content-Disposition",
+                  "value": "inline; filename=\"example.txt\""
+                }
+              ],
+              "body": "This is the content of the text file.\nLine 2 of the file.\nLine 3 of the file."
+            }
+          ]
+        },
+        {
+          "name": "Modify File Content",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{FILE_KEY}}\",\n  \"searchText\": \"old text\",\n  \"replaceText\": \"new text\",\n  \"options\": {\n    \"caseSensitive\": false,\n    \"regexSearch\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file/modify",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file", "modify"]
+            },
+            "description": "Modify the content of an existing text file in S3 by performing a search and replace operation. This only works on text-based files (text/plain, application/json, application/xml, etc.). Binary files cannot be modified with this endpoint."
+          },
+          "response": [
+            {
+              "name": "Successful Modification",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"log/example-file.txt\",\n  \"searchText\": \"error\",\n  \"replaceText\": \"warning\",\n  \"options\": {\n    \"caseSensitive\": false,\n    \"regexSearch\": false\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/modify",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", "modify"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"File content modified successfully\",\n  \"key\": \"log/example-file.txt\"\n}"
+            },
+            {
+              "name": "No Modifications",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"log/example-file.txt\",\n  \"searchText\": \"text not found\",\n  \"replaceText\": \"replacement\",\n  \"options\": {\n    \"caseSensitive\": true,\n    \"regexSearch\": false\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/modify",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", "modify"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"No modifications were made\",\n  \"key\": \"log/example-file.txt\"\n}"
+            },
+            {
+              "name": "Using Regex",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"log/example-file.txt\",\n  \"searchText\": \"error\\\\d+\",\n  \"replaceText\": \"ERR-$&\",\n  \"options\": {\n    \"caseSensitive\": false,\n    \"regexSearch\": true\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/modify",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", "modify"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"File content modified successfully\",\n  \"key\": \"log/example-file.txt\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Modify File Content (Query)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"{{FILE_KEY}}\",\n  \"searchText\": \"old text\",\n  \"replaceText\": \"new text\",\n  \"options\": {\n    \"caseSensitive\": false,\n    \"regexSearch\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file"]
+            },
+            "description": "Alternative endpoint for modifying text files using the same URL pattern as the query parameter-based file operations."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete File (Path)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file/:key",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "uploads/example-file.txt",
+                  "description": "Key of the file to delete"
+                }
+              ]
+            },
+            "description": "Permanently delete a file from S3 storage. This operation cannot be undone."
+          },
+          "response": [
+            {
+              "name": "Successful Deletion",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file/:key",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file", ":key"],
+                  "variable": [
+                    {
+                      "key": "key",
+                      "value": "uploads/example-file.txt"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"message\": \"File deleted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete File (Query)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file?key={{FILE_KEY}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{FILE_KEY}}",
+                  "description": "URL-encoded key of the file to delete"
+                }
+              ]
+            },
+            "description": "Delete a file using query parameter approach instead of path parameter. This is useful for cases where the key contains special characters that might cause issues in URL paths."
+          },
+          "response": [
+            {
+              "name": "Successful Deletion",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/file?key=log%2Fexample-file.txt",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "file"],
+                  "query": [
+                    {
+                      "key": "key",
+                      "value": "log%2Fexample-file.txt"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n    \"message\": \"File deleted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "File Exists Check",
+          "request": {
+            "method": "HEAD",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/file/:key",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "file", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "uploads/example-file.txt",
+                  "description": "Key of the file to check"
+                }
+              ]
+            },
+            "description": "Check if a file exists without retrieving its contents or metadata. Returns a 200 status code if the file exists, 404 if it doesn't."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for interacting with individual files stored in S3. These routes handle file uploads, downloads, metadata retrieval, deletion, and modification."
+    },
+    {
+      "name": "Batch Operations",
+      "item": [
+        {
+          "name": "Batch File Operations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operations\": [\n    { \"type\": \"exists\", \"key\": \"uploads/file1.txt\" },\n    { \"type\": \"metadata\", \"key\": \"uploads/file2.txt\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/s3/batch",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "batch"]
+            },
+            "description": "Perform multiple operations in a single API call to reduce network overhead. Currently supports 'exists' and 'metadata' operation types. Limited to 10 operations per batch."
+          },
+          "response": [
+            {
+              "name": "Successful Batch Operation",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"operations\": [\n    { \"type\": \"exists\", \"key\": \"uploads/file1.txt\" },\n    { \"type\": \"metadata\", \"key\": \"uploads/file2.txt\" }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/batch",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "batch"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"results\": [\n    {\n      \"status\": \"fulfilled\",\n      \"value\": { \"key\": \"uploads/file1.txt\", \"exists\": true }\n    },\n    {\n      \"status\": \"fulfilled\",\n      \"value\": {\n        \"key\": \"uploads/file2.txt\",\n        \"contentType\": \"image/jpeg\",\n        \"contentLength\": 2048,\n        \"lastModified\": \"2023-07-10T12:00:00.000Z\",\n        \"metadata\": { \"uploaded-by\": \"test-user\" },\n        \"eTag\": \"def456ghi789\"\n      }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "List All Files",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{API_KEY}}",
+                "type": "text",
+                "description": "API key for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/s3/files?prefix=uploads&maxKeys=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["s3", "files"],
+              "query": [
+                {
+                  "key": "prefix",
+                  "value": "uploads",
+                  "description": "Filter files by prefix (folder path)"
+                },
+                {
+                  "key": "maxKeys",
+                  "value": "20",
+                  "description": "Maximum number of files to return"
+                },
+                {
+                  "key": "continuationToken",
+                  "value": "",
+                  "description": "Token for pagination",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all files in the S3 bucket with optional filtering by prefix (folder path). Supports pagination for large result sets."
+          },
+          "response": [
+            {
+              "name": "Successful File List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{API_KEY}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{BASE_URL}}/s3/files?prefix=uploads",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["s3", "files"],
+                  "query": [
+                    {
+                      "key": "prefix",
+                      "value": "uploads"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"files\": [\n    {\n      \"key\": \"uploads/file1.txt\",\n      \"size\": 1024,\n      \"lastModified\": \"2023-07-10T12:00:00.000Z\"\n    },\n    {\n      \"key\": \"uploads/file2.jpg\",\n      \"size\": 2048,\n      \"lastModified\": \"2023-07-11T12:00:00.000Z\"\n    }\n  ],\n  \"isTruncated\": false,\n  \"nextContinuationToken\": null\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints for performing operations on multiple files at once, such as batch checks and listing all files."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script for the entire collection",
+          "console.log('Starting request to: ' + pm.request.url);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script for the entire collection",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    console.log('Request successful');",
+          "} else {",
+          "    console.log('Request failed with status: ' + pm.response.code);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "Base URL for the S3 service API"
+    },
+    {
+      "key": "API_KEY",
+      "value": "your-api-key-here",
+      "type": "string",
+      "description": "API key for authentication"
+    },
+    {
+      "key": "FILE_KEY",
+      "value": "log%2Fexample-file.txt",
+      "type": "string",
+      "description": "Example URL-encoded file key to use in requests"
+    }
+  ]
+}

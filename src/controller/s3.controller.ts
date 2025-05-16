@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { uploadToS3, getFileMetadata, deleteFile as deleteFileService, logUploadToDB } from "../service/s3.service";
+import { uploadToS3, getFileMetadata, deleteFile as deleteFileService, logUploadToDB, listFiles, modifyFileContent } from "../service/s3.service";
 import { generateFileKey } from "../utils/uuid";
 
 export const uploadFile = async (c: Context) => {
@@ -105,12 +105,16 @@ export const uploadFile = async (c: Context) => {
 export const getUploadedFile = async (c: Context) => {
   try {
     const { key } = c.req.param();
-    
+
     if (!key) {
       return c.json({ error: "File key is required" }, 400);
     }
-    
-    const fileInfo = await getFileMetadata(key);
+
+    // Sanitize the key to remove any trailing commas or whitespace
+    const sanitizedKey = key.trim().replace(/,+$/, "");
+    console.log(`Retrieving file with sanitized key: ${sanitizedKey}`); // Log the sanitized key
+
+    const fileInfo = await getFileMetadata(sanitizedKey); // Use the sanitized key to retrieve metadata
 
     if (!fileInfo) {
       return c.json({ error: "File not found" }, 404);
@@ -126,20 +130,111 @@ export const getUploadedFile = async (c: Context) => {
 export const deleteFile = async (c: Context) => {
   try {
     const { key } = c.req.param();
-    
+
     if (!key) {
       return c.json({ error: "File key is required" }, 400);
     }
 
     const deleted = await deleteFileService(key);
-    
+
     if (!deleted) {
-      return c.json({ error: "Failed to delete file" }, 500);
+      return c.json({ error: "File not found or already deleted" }, 404);
     }
 
-    return c.json({ message: "File deleted successfully" });
+    return c.json({ message: "File deleted successfully" }, 200);
   } catch (error) {
     console.error("Delete error:", error);
     return c.json({ error: "Failed to delete file" }, 500);
+  }
+};
+
+export const fetchFiles = async (c: Context) => {
+  try {
+    const files = await listFiles();
+
+    if (!files || files.length === 0) {
+      console.warn("No files found in the S3 bucket.");
+      return c.json({ message: "No files found" }, 404);
+    }
+
+    return c.json({ files }, 200);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Fetch files error:", error.message);
+    } else {
+      console.error("Fetch files error:", error);
+    }
+    return c.json({ error: "Failed to fetch files. Ensure the bucket exists and is accessible." }, 500);
+  }
+};
+
+export const modifyFile = async (c: Context) => {
+  try {
+    // Get the request body
+    const body = await c.req.json();
+    
+    // Validate required fields
+    const { key, searchText, replaceText, options } = body;
+    
+    if (!key) {
+      return c.json({ error: "File key is required" }, 400);
+    }
+    
+    if (searchText === undefined || searchText === null) {
+      return c.json({ error: "Search text is required" }, 400);
+    }
+    
+    if (replaceText === undefined || replaceText === null) {
+      return c.json({ error: "Replace text is required" }, 400);
+    }
+    
+    // Prepare options with defaults
+    const modifyOptions = {
+      caseSensitive: options?.caseSensitive === true,
+      regexSearch: options?.regexSearch === true
+    };
+    
+    // Decode and sanitize the key
+    const sanitizedKey = decodeURIComponent(key.trim());
+    console.log(`Modifying file with key: ${sanitizedKey}`);
+    
+    // Check if the file exists
+    const fileInfo = await getFileMetadata(sanitizedKey);
+    if (!fileInfo) {
+      return c.json({ error: "File not found" }, 404);
+    }
+    
+    // Perform the modification
+    const modified = await modifyFileContent(
+      sanitizedKey, 
+      searchText, 
+      replaceText, 
+      modifyOptions
+    );
+    
+    if (!modified) {
+      return c.json({ 
+        message: "No modifications were made", 
+        key: sanitizedKey
+      }, 200);
+    }
+    
+    return c.json({ 
+      message: "File content modified successfully", 
+      key: sanitizedKey
+    }, 200);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes("binary file")) {
+        return c.json({ error: "Cannot modify binary file. Only text-based files are supported." }, 400);
+      }
+      if (error.message.includes("Invalid regex")) {
+        return c.json({ error: "Invalid regex pattern provided" }, 400);
+      }
+      console.error("Modify file error:", error.message);
+      return c.json({ error: error.message }, 500);
+    }
+    console.error("Modify file error:", error);
+    return c.json({ error: "Failed to modify file content" }, 500);
   }
 };

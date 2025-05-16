@@ -10,6 +10,7 @@ import { appRouter, app as appRoutes } from "./routers/index";
 import fs from "fs";
 import path from "path";
 import { config } from "./config";
+import { cache } from "hono/cache"; // Ensure cache is imported
 
 const openapiDir = path.resolve('./public/openapi');
 if (!fs.existsSync(openapiDir)) {
@@ -18,17 +19,21 @@ if (!fs.existsSync(openapiDir)) {
 }
 
 const app = new Hono();
-app.use(logger());
-app.use(prettyJSON());
+
+// Apply CORS middleware as the very first middleware
 app.use(
 	"/*",
 	cors({
-		origin: process.env.CORS_ORIGIN || "*", // Default to allow any origin if not specified
+		origin: process.env.CORS_ORIGIN || "*", // Set to "*" or your frontend URL, e.g., "http://localhost:3000"
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+		allowHeaders: ["Content-Type", "Authorization", "x-api-key"],
 		exposeHeaders: ["Content-Length", "Content-Type", "ETag"],
 		maxAge: 86400,
 	}),
 );
+
+app.use(logger());
+app.use(prettyJSON());
 
 // Error handling middleware
 app.onError((err, c) => {
@@ -49,6 +54,13 @@ app.use(
 
 // Mount all application routes directly (not nested under another path)
 app.route("", appRoutes);
+
+// Cache middleware check
+if (typeof caches === "undefined") {
+  console.warn("Cache Middleware is not enabled because caches is not defined.");
+} else {
+  console.log("Cache Middleware is enabled.");
+}
 
 // Start the server
 const port = config.server.port;
