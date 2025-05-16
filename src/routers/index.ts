@@ -37,6 +37,7 @@ export function createAppRoutes() {
   // Apply API key middleware to all routes
   routes.use('*', apiKeyMiddleware);
 
+  // Add S3 routes
   routes.route('/s3', s3Router);
 
   const openapiDir = path.resolve('./public/openapi');

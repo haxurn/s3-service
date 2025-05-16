@@ -15,7 +15,8 @@
 		"types": ["bun"],
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true
 	},
 	"tsc-alias": {
 		"resolveFullPaths": true

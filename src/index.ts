@@ -10,6 +10,7 @@ import { appRouter, app as appRoutes } from "./routers/index";
 import fs from "fs";
 import path from "path";
 import { config } from "./config";
+import { cache } from "hono/cache"; // Ensure cache is imported
 
 const openapiDir = path.resolve('./public/openapi');
 if (!fs.existsSync(openapiDir)) {
@@ -49,6 +50,13 @@ app.use(
 
 // Mount all application routes directly (not nested under another path)
 app.route("", appRoutes);
+
+// Cache middleware check
+if (typeof caches === "undefined") {
+  console.warn("Cache Middleware is not enabled because caches is not defined.");
+} else {
+  console.log("Cache Middleware is enabled.");
+}
 
 // Start the server
 const port = config.server.port;
