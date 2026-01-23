@@ -1,11 +1,9 @@
 import { PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, S3ServiceException } from "@aws-sdk/client-s3";
 import { s3 } from "../lib/s3";
-import { MongoClient } from "mongodb"; // Import MongoDB client
+import { getMongoClient } from "../lib/mongodb";
 import { config } from "../config";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
-
-const mongoClient = new MongoClient(process.env.DATABASE_URL!); // Use the DATABASE_URL from .env
 
 export const uploadToS3 = async (buffer: Buffer, key: string, contentType: string): Promise<string> => {
   const bucket = config.s3.bucket;
@@ -106,9 +104,9 @@ export const deleteFile = async (key: string): Promise<boolean> => {
 
     await s3.send(command);
 
-    // Delete from database using MongoDB client
+// Delete from database using MongoDB client
     try {
-      await mongoClient.connect();
+      const mongoClient = await getMongoClient();
       const db = mongoClient.db();
       const collection = db.collection("s3Service");
 
@@ -118,8 +116,6 @@ export const deleteFile = async (key: string): Promise<boolean> => {
       }
     } catch (dbError) {
       console.error("Failed to delete file record from database:", dbError);
-    } finally {
-      await mongoClient.close();
     }
 
     return true; // File deleted successfully
@@ -150,8 +146,8 @@ export const logUploadToDB = async ({
     const sanitizedKey = key.trim().replace(/,+$/, "");
     console.log(`Sanitized key for database logging: ${sanitizedKey}`); // Log the sanitized key
 
-    // Connect to the MongoDB client
-    await mongoClient.connect();
+// Connect to the MongoDB client
+    const mongoClient = await getMongoClient();
     const db = mongoClient.db(); // Use the default database from the connection string
     const collection = db.collection("s3Service"); // Use the collection name
 
@@ -187,8 +183,6 @@ export const logUploadToDB = async ({
   } catch (error) {
     console.error("Failed to log upload to database:", error);
     throw new Error("Database logging failed");
-  } finally {
-    await mongoClient.close(); // Ensure the client is closed after the operation
   }
 };
 
@@ -340,9 +334,9 @@ export const modifyFileContent = async (
     await s3.send(putCommand);
     console.log(`Successfully modified file: ${key}`);
 
-    // Update the database record if it exists
+// Update the database record if it exists
     try {
-      await mongoClient.connect();
+      const mongoClient = await getMongoClient();
       const db = mongoClient.db();
       const collection = db.collection("s3Service");
 
@@ -354,8 +348,6 @@ export const modifyFileContent = async (
     } catch (dbError) {
       console.warn(`Failed to update database record for ${key}:`, dbError);
       // Continue even if DB update fails
-    } finally {
-      await mongoClient.close();
     }
 
     return true;
