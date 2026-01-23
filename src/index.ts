@@ -12,24 +12,24 @@ import path from "path";
 import { config } from "./config";
 import { cache } from "hono/cache"; // Ensure cache is imported
 
-const openapiDir = path.resolve('./public/openapi');
+const openapiDir = path.resolve("./public/openapi");
 if (!fs.existsSync(openapiDir)) {
-	console.log('Creating OpenAPI directory...');
-	fs.mkdirSync(openapiDir, { recursive: true });
+  console.log("Creating OpenAPI directory...");
+  fs.mkdirSync(openapiDir, { recursive: true });
 }
 
 const app = new Hono();
 
 // Apply CORS middleware as the very first middleware
 app.use(
-	"/*",
-	cors({
-		origin: process.env.CORS_ORIGIN || "*", // Set to "*" or your frontend URL, e.g., "http://localhost:3000"
-		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
-		allowHeaders: ["Content-Type", "Authorization", "x-api-key"],
-		exposeHeaders: ["Content-Length", "Content-Type", "ETag"],
-		maxAge: 86400,
-	}),
+  "/*",
+  cors({
+    origin: process.env.CORS_ORIGIN || "*", // Set to "*" or your frontend URL, e.g., "http://localhost:3000"
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
+    allowHeaders: ["Content-Type", "Authorization", "x-api-key"],
+    exposeHeaders: ["Content-Length", "Content-Type", "ETag"],
+    maxAge: 86400,
+  }),
 );
 
 app.use(logger());
@@ -37,19 +37,19 @@ app.use(prettyJSON());
 
 // Error handling middleware
 app.onError((err, c) => {
-	console.error("Application error:", err);
-	return c.json({ error: "Internal Server Error" }, 500);
+  console.error("Application error:", err);
+  return c.json({ error: "Internal Server Error" }, 500);
 });
 
 // Mount tRPC router
 app.use(
-	"/trpc/*",
-	trpcServer({
-		router: appRouter,
-		createContext: (_opts, context) => {
-			return createContext({ context });
-		},
-	}),
+  "/trpc/*",
+  trpcServer({
+    router: appRouter,
+    createContext: (_opts, context) => {
+      return createContext({ context });
+    },
+  }),
 );
 
 // Mount all application routes directly (not nested under another path)
@@ -57,7 +57,9 @@ app.route("", appRoutes);
 
 // Cache middleware check
 if (typeof caches === "undefined") {
-  console.warn("Cache Middleware is not enabled because caches is not defined.");
+  console.warn(
+    "Cache Middleware is not enabled because caches is not defined.",
+  );
 } else {
   console.log("Cache Middleware is enabled.");
 }
@@ -67,6 +69,6 @@ const port = config.server.port;
 console.log(`🚀 Server starting on port ${port}`);
 
 export default {
-	fetch: app.fetch.bind(app),
-	port
+  fetch: app.fetch.bind(app),
+  port,
 };
